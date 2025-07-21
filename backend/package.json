@@ -1,0 +1,33 @@
+{
+  "name": "receiptify",
+  "version": "1.0.0",
+  "description": "Receiptify 가계부 백엔드 서버",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "expense-tracker",
+    "receipt",
+    "ocr"
+  ],
+  "author": "hjmoons",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "nodemon": "^3.1.10"
+  }
+}
