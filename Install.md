@@ -13,29 +13,20 @@ cd backend
 # package.json 생성
 npm init -y
 
-# 기본 서버 패키지
+# TypeScript 및 개발 도구
+npm install -D typescript @types/node tsx nodemon
+
+# Express 및 관련 패키지
 npm install express cors dotenv
-npm install mongoose  # MongoDB 사용시
-# 또는
-npm install pg        # PostgreSQL 사용시
+npm install -D @types/express @types/cors
 
 # 인증 관련
-npm install jsonwebtoken bcryptjs
+npm install bcryptjs jsonwebtoken
+npm install -D @types/bcryptjs @types/jsonwebtoken
 
-# 파일 업로드 (영수증 이미지)
-npm install multer
-
-# 개발 도구
-npm install -D nodemon @types/node
-
-# 폴더 구조 생성
-mkdir src
-mkdir src/routes
-mkdir src/controllers
-mkdir src/models
-mkdir src/middleware
-mkdir src/utils
-mkdir uploads  # 영수증 이미지 임시 저장
+# 데이터베이스
+npm install better-sqlite3
+npm install -D @types/better-sqlite3
 ```
 
 ## FrontEnd
