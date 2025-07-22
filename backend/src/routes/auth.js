@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
+const authMiddleware = require('../middleware/auth');
 
-// 회원가입
-router.post('/register', (req, res) => {
-  res.json({ message: '회원가입 엔드포인트' });
-});
+// 공개 라우트
+router.post('/register', authController.register);
+router.post('/login', authController.login);
 
-// 로그인
-router.post('/login', (req, res) => {
-  res.json({ message: '로그인 엔드포인트' });
-});
+// 보호된 라우트
+router.get('/me', authMiddleware, authController.me);
 
 module.exports = router;
