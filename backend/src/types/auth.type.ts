@@ -20,7 +20,3 @@ export interface RegisterDto {
 export interface JwtPayload {
   userId: number;
 }
-
-export interface AuthRequest extends Express.Request {
-  user?: JwtPayload;
-}

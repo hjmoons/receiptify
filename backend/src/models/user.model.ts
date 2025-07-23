@@ -3,22 +3,17 @@ import bcrypt from 'bcryptjs';
 import { User, RegisterDto } from '../types/auth.type';
 
 export class UserModel {
-  private static statements = {
-    create: db.prepare(`
-      INSERT INTO users (email, password, name)
-      VALUES (@email, @password, @name)
-    `),
-    
-    findByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
-    
-    findById: db.prepare('SELECT * FROM users WHERE id = ?')
-  };
-
+  // prepare문을 메서드 안에서 실행
   static async create(userData: RegisterDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
     try {
-      const result = this.statements.create.run({
+      const stmt = db.prepare(`
+        INSERT INTO users (email, password, name)
+        VALUES (@email, @password, @name)
+      `);
+      
+      const result = stmt.run({
         email: userData.email,
         password: hashedPassword,
         name: userData.name
@@ -39,11 +34,13 @@ export class UserModel {
   }
 
   static findByEmail(email: string): User | undefined {
-    return this.statements.findByEmail.get(email) as User | undefined;
+    const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+    return stmt.get(email) as User | undefined;
   }
 
   static findById(id: number): User | undefined {
-    return this.statements.findById.get(id) as User | undefined;
+    const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
+    return stmt.get(id) as User | undefined;
   }
 
   static async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {

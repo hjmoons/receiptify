@@ -1,9 +1,8 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../types/auth.type';
+import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt.util';
 
 export const authMiddleware = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
