@@ -27,6 +27,10 @@ npm install -D @types/bcryptjs @types/jsonwebtoken
 # 데이터베이스
 npm install better-sqlite3
 npm install -D @types/better-sqlite3
+
+# Swagger-UI
+npm install swagger-ui-express swagger-jsdoc
+npm install -D @types/swagger-ui-express @types/swagger-jsdoc
 ```
 
 ## FrontEnd
