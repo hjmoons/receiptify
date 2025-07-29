@@ -33,12 +33,12 @@ export class UserModel {
     }
   }
 
-  static findByEmail(email: string): User | undefined {
+  static async findByEmail(email: string): Promise<User | undefined> {
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
     return stmt.get(email) as User | undefined;
   }
 
-  static findById(id: number): User | undefined {
+  static async findById(id: number): Promise<User | undefined> {
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     return stmt.get(id) as User | undefined;
   }

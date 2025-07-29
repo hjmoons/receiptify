@@ -54,7 +54,7 @@ export class AuthController {
         });
       }
 
-      const user = UserModel.findByEmail(email);
+      const user = await UserModel.findByEmail(email);
       if (!user) {
         return res.status(401).json({
           success: false,
