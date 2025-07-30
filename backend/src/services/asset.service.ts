@@ -47,10 +47,10 @@ export class AssetService {
         // 1. 소유권 확인
         await this.verifyOwnership(assetData.id, userId);
 
-        // 3. 자산 업데이트 실행
+        // 2. 자산 업데이트 실행
         const result = await AssetModel.update(assetData);
 
-        // 4. 업데이트가 실제로 실행되었는지 확인
+        // 3. 업데이트가 실제로 실행되었는지 확인
         if (result === 0) {
             throw new AssetUpdateError('자산 업데이트에 실패했습니다.');
         }
@@ -59,10 +59,10 @@ export class AssetService {
     }
 
     static async delete(id: number, userId: number): Promise<Asset> {
-        // 1. Asset ID 존재 확인
+        // 1. 소유권 확인
         const existingAsset = await this.verifyOwnership(id, userId);
 
-        // 3. 자산 삭제 실행
+        // 2. 자산 삭제 실행
         const result = await AssetModel.delete(id);
         if (result === 0) {
             throw new AssetDeleteError('자산 삭제에 실패했습니다.');
