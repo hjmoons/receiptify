@@ -72,7 +72,9 @@ export class AssetService {
     }
 
     static async getTotalAssetValue(userId: number): Promise<number> {
-        return await AssetModel.getTotalBalance(userId);
+        const result = await AssetModel.getTotalBalance(userId);
+        console.log('Total Asset Value: ', result);
+        return result;
     }
 
     // 중복 검증

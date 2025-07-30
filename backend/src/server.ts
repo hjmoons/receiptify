@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import authRoutes from './routes/auth.route';
+import assetRoutes from './routes/asset.route';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.get('/api-docs.json', (req, res) => {
 
 // 라우트
 app.use('/api/auth', authRoutes);
+app.use('/api/asset', assetRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Receiptify API' });

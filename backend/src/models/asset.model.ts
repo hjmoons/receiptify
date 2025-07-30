@@ -7,7 +7,7 @@ export class AssetModel {
             INSERT INTO assets (name, type, balance, user_id)
             VALUES (@name, @type, @balance, @user_id)
         `);
-        const result = stmt.run({assetData});
+        const result = stmt.run(assetData);
         return {changes: result.changes, lastInsertRowid: result.lastInsertRowid};
     }
 
@@ -27,7 +27,7 @@ export class AssetModel {
             WHERE user_id = ? 
             ORDER BY id DESC
         `);
-        return stmt.get(userId) as Asset[];
+        return stmt.all(userId) as Asset[];
     }
 
     static async update(assetData: UpdateDTO) : Promise<number> {
@@ -36,7 +36,7 @@ export class AssetModel {
             SET name=@name, type=@type, balance=@balance 
             WHERE id=@id
         `);
-        const result = stmt.run({assetData});
+        const result = stmt.run(assetData);
         return result.changes
     }
 
@@ -61,11 +61,12 @@ export class AssetModel {
 
     static async getTotalBalance(userId: number): Promise<number> {
         const stmt = db.prepare(`
-            SELECT SUM(balance)
+            SELECT SUM(balance) AS total
             FROM assets
             WHERE user_id = ?
         `);
         const result = stmt.get(userId) as {total: number | null};
+        console.log(result)
         return result.total || 0;
     }
 }

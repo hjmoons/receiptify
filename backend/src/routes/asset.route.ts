@@ -139,7 +139,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/assets:
+ * /api/asset:
  *   post:
  *     summary: 새 자산 생성
  *     tags: [Assets]
@@ -167,7 +167,32 @@ router.post('/', authMiddleware, AssetController.create);
 
 /**
  * @swagger
- * /api/assets/{id}:
+ * /api/asset/total:
+ *   get:
+ *     summary: 로그인된 사용자의 총 자산 가치 조회
+ *     tags: [Assets]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 총 자산 가치 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalValue:
+ *                   type: number
+ *                   description: 총 자산 가치
+ *                   example: 5000000
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+router.get('/total', authMiddleware, AssetController.getTotalAssetValue);
+
+/**
+ * @swagger
+ * /api/asset/{id}:
  *   get:
  *     summary: 특정 자산 조회
  *     tags: [Assets]
@@ -196,7 +221,7 @@ router.get('/:id', authMiddleware, AssetController.get);
 
 /**
  * @swagger
- * /api/assets:
+ * /api/asset:
  *   get:
  *     summary: 로그인된 사용자의 모든 자산 조회
  *     tags: [Assets]
@@ -218,7 +243,7 @@ router.get('/', authMiddleware, AssetController.getList);
 
 /**
  * @swagger
- * /api/assets/{id}:
+ * /api/asset/{id}:
  *   put:
  *     summary: 자산 정보 수정
  *     tags: [Assets]
@@ -257,7 +282,7 @@ router.put('/:id', authMiddleware, AssetController.update);
 
 /**
  * @swagger
- * /api/assets/{id}:
+ * /api/asset/{id}:
  *   delete:
  *     summary: 자산 삭제
  *     tags: [Assets]
@@ -285,30 +310,5 @@ router.put('/:id', authMiddleware, AssetController.update);
  *         $ref: '#/components/responses/NotFoundError'
  */
 router.delete('/:id', authMiddleware, AssetController.delete);
-
-/**
- * @swagger
- * /api/assets/total:
- *   get:
- *     summary: 로그인된 사용자의 총 자산 가치 조회
- *     tags: [Assets]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 총 자산 가치 반환
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 totalValue:
- *                   type: number
- *                   description: 총 자산 가치
- *                   example: 5000000
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- */
-router.get('/total', authMiddleware, AssetController.getTotalAssetValue);
 
 export default router;
