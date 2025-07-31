@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import type { Asset, AssetForm, AssetStyle, TotalAssetsResponse } from '../types/asset';
 
 export default function Home() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const [activeTab, setActiveTab] = useState('가계부');
+  const [activeTab, setActiveTab] = useState<string>('가계부');
+
+  // 자산 관련 상태
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [totalAssets, setTotalAssets] = useState<number>(0);
+  const [assetsLoading, setAssetsLoading] = useState<boolean>(false);
 
   // 자산 추가 팝업 설정
-  const [showAccountModal, setShowAccountModal] = useState(false);
-  const [accountForm, setAccountForm] = useState({
+  const [showAccountModal, setShowAccountModal] = useState<boolean>(false);
+  const [accountForm, setAccountForm] = useState<AssetForm>({
     name: '',
     type: 'account',
     balance: 0
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!user.id) {
@@ -22,13 +28,50 @@ export default function Home() {
     }
   }, [navigate, user.id]);
 
-  const handleLogout = () => {
+  // 자산 목록 가져오기
+  const fetchAssets = async (): Promise<void> => {
+    if (!user.id) return;
+    
+    setAssetsLoading(true);
+    try {
+      const response = await api.get<Asset[]>(`/asset?user_id=${user.id}`);
+      setAssets(response.data || []);
+    } catch (error) {
+      console.error('자산 목록 조회 오류:', error);
+      setAssets([]);
+    } finally {
+      setAssetsLoading(false);
+    }
+  };
+
+  // 총 자산 가져오기
+  const fetchTotalAssets = async (): Promise<void> => {
+    if (!user.id) return;
+    
+    try {
+      const response = await api.get<TotalAssetsResponse>(`/asset/total?user_id=${user.id}`);
+      setTotalAssets(response.data?.totalValue || 0);
+    } catch (error) {
+      console.error('총 자산 조회 오류:', error);
+      setTotalAssets(0);
+    }
+  };
+
+  // 자산 탭이 선택될 때 자산 목록 가져오기
+  useEffect(() => {
+    if (activeTab === '자산' && user.id) {
+      fetchAssets();
+      fetchTotalAssets();
+    }
+  }, [activeTab, user.id]);
+
+  const handleLogout = (): void => {
     localStorage.clear();
     navigate('/login');
   };
 
   // 자산 추가 모달 열기
-  const openAccountModal = () => {
+  const openAccountModal = (): void => {
     setShowAccountModal(true);
     setAccountForm({
       name: '',
@@ -38,7 +81,7 @@ export default function Home() {
   };
 
   // 자산 추가 모달 닫기
-  const closeAccountModal = () => {
+  const closeAccountModal = (): void => {
     setShowAccountModal(false);
     setAccountForm({
       name: '',
@@ -48,7 +91,7 @@ export default function Home() {
   };
 
   // 폼 입력 처리
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     setAccountForm(prev => ({
       ...prev,
@@ -57,7 +100,7 @@ export default function Home() {
   };
 
    // 자산 추가 API 호출
-  const handleAddAccount = async (e: any) => {
+  const handleAddAccount = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     
     if (!accountForm.name.trim()) {
@@ -77,8 +120,9 @@ export default function Home() {
 
       alert('자산이 성공적으로 추가되었습니다!');
       closeAccountModal();
-      // 페이지 새로고침하거나 자산 목록을 다시 불러올 수 있음
-      // window.location.reload(); 또는 자산 목록 state 업데이트
+      // 자산 목록과 총합 새로고침
+      fetchAssets();
+      fetchTotalAssets();
     } catch (error: any) {
       console.error('API 호출 오류:', error);
       const errorMessage = error.response?.data?.message || '자산 추가에 실패했습니다.';
@@ -88,7 +132,59 @@ export default function Home() {
     }
   };
 
- const tabs = ['가계부', '통계', '자산'];
+  // 자산 삭제
+  const handleDeleteAsset = async (assetId: number): Promise<void> => {
+    if (!confirm('정말로 이 자산을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/asset/${assetId}`);
+      alert('자산이 삭제되었습니다.');
+      fetchAssets(); // 목록 새로고침
+      fetchTotalAssets(); // 총합 새로고침
+    } catch (error) {
+      console.error('자산 삭제 오류:', error);
+      alert('자산 삭제에 실패했습니다.');
+    }
+  };
+
+  // 자산 유형별 아이콘 및 색상
+  const getAssetStyle = (type: Asset['type']): AssetStyle => {
+    switch (type) {
+      case 'account':
+        return {
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-200',
+          textColor: 'text-blue-800',
+          badgeColor: 'bg-blue-200 text-blue-800',
+          label: '계좌'
+        };
+      case 'card':
+        return {
+          bgColor: 'bg-purple-50',
+          borderColor: 'border-purple-200',
+          textColor: 'text-purple-800',
+          badgeColor: 'bg-purple-200 text-purple-800',
+          label: '카드'
+        };
+      default:
+        return {
+          bgColor: 'bg-gray-50',
+          borderColor: 'border-gray-200',
+          textColor: 'text-gray-800',
+          badgeColor: 'bg-gray-200 text-gray-800',
+          label: '기타'
+        };
+    }
+  };
+
+  // 금액 포맷팅
+  const formatCurrency = (amount: number): string => {
+    return `₩${amount.toLocaleString()}`;
+  };
+
+ const tabs: string[] = ['가계부', '통계', '자산'];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -160,16 +256,71 @@ export default function Home() {
                 + 자산 추가
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-4 rounded border border-blue-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-blue-800">현금</h4>
-                  <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">CASH</span>
-                </div>
-                <p className="text-2xl font-bold text-blue-600">₩0</p>
-              </div>
+
+            {/* 총 자산 요약 */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-lg text-white">
+              <h4 className="text-lg font-medium opacity-90">총 자산</h4>
+              <p className="text-3xl font-bold mt-2">{formatCurrency(totalAssets)}</p>
+              <p className="text-sm opacity-75 mt-1">등록된 자산: {assets.length}개</p>
             </div>
-            <div className="bg-white border rounded p-6">
+
+            {/* 자산 목록 */}
+            {assetsLoading ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="mt-2 text-gray-600">자산 목록을 불러오는 중...</p>
+              </div>
+            ) : assets.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {assets.map((asset: Asset) => {
+                  const style = getAssetStyle(asset.type);
+                  return (
+                    <div key={asset.id} className={`${style.bgColor} p-4 rounded-lg border ${style.borderColor} relative group`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className={`font-semibold ${style.textColor} truncate pr-2`} title={asset.name}>
+                          {asset.name}
+                        </h4>
+                        <span className={`text-xs px-2 py-1 rounded ${style.badgeColor} whitespace-nowrap`}>
+                          {style.label}
+                        </span>
+                      </div>
+                      <p className={`text-2xl font-bold ${style.textColor} mb-2`}>
+                        {formatCurrency(asset.balance)}
+                      </p>
+                      {asset.created_at && (
+                        <p className="text-xs text-gray-500">
+                          등록일: {new Date(asset.created_at).toLocaleDateString()}
+                        </p>
+                      )}
+                      
+                      {/* 삭제 버튼 - 호버 시 표시 */}
+                      <button
+                        onClick={() => handleDeleteAsset(asset.id)}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        title="자산 삭제"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-gray-50 p-8 rounded-lg text-center">
+                <div className="text-gray-400 text-4xl mb-4">💳</div>
+                <p className="text-gray-600 mb-2">등록된 자산이 없습니다.</p>
+                <p className="text-gray-500 text-sm mb-4">계좌나 카드를 추가해보세요.</p>
+                <button 
+                  onClick={openAccountModal}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  첫 자산 추가하기
+                </button>
+              </div>
+            )}
+
+            {/* 예산 설정 */}
+            <div className="bg-white border rounded-lg p-6">
               <h4 className="font-semibold mb-4">예산 설정</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
