@@ -40,13 +40,16 @@ db.exec(`
   );
 
   -- 카테고리 테이블
-  CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      parent_id INTEGER,
-      name TEXT NOT NULL,
-      level INTEGER NOT NULL CHECK (level IN (1, 2, 3)),
-      FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE
-  );
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    parent_id INTEGER,
+    name TEXT NOT NULL,
+    type INTEGER NOT NULL CHECK (type IN (0, 1)), -- 0: 지출, 1: 수입
+    level INTEGER NOT NULL CHECK (level IN (1, 2, 3)),
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
   -- 수입/지출 내역 테이블
   CREATE TABLE IF NOT EXISTS receipts (

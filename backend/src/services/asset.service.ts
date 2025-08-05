@@ -1,10 +1,10 @@
 import { Asset, CreateDTO, UpdateDTO } from "../types/asset.type";
 import { AssetModel } from "../models/asset.model";
 import {
-    DuplicateAssetError,
-    AssetCreateError,
-    AssetUpdateError,
-    AssetDeleteError,
+    DuplicateError,
+    CreateError,
+    UpdateError,
+    DeleteError,
 } from "../errors/asset.error";
 import {
     NotFoundError,
@@ -19,7 +19,7 @@ export class AssetService {
        // 2. 자산 생성
         const result = await AssetModel.create(assetData);
         if (result.changes === 0) {
-            throw new AssetCreateError('자산 생성에 실패했습니다.');
+            throw new CreateError('자산 생성에 실패했습니다.');
         }
 
         // 3. 생성된 자산 반환
@@ -54,7 +54,7 @@ export class AssetService {
 
         // 3. 업데이트가 실제로 실행되었는지 확인
         if (result === 0) {
-            throw new AssetUpdateError('자산 업데이트에 실패했습니다.');
+            throw new UpdateError('자산 업데이트에 실패했습니다.');
         }
 
         return await AssetModel.findById(assetData.id) as Asset;
@@ -67,7 +67,7 @@ export class AssetService {
         // 2. 자산 삭제 실행
         const result = await AssetModel.delete(id);
         if (result === 0) {
-            throw new AssetDeleteError('자산 삭제에 실패했습니다.');
+            throw new DeleteError('자산 삭제에 실패했습니다.');
         }
 
         return existingAsset;
@@ -87,7 +87,7 @@ export class AssetService {
         );
         
         if (duplicateAsset) {
-            throw new DuplicateAssetError('이미 같은 이름의 자산이 존재합니다.');
+            throw new DuplicateError('이미 같은 이름의 자산이 존재합니다.');
         }
     }
     
