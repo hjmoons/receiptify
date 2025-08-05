@@ -28,6 +28,8 @@ export class AssetService {
             throw new NotFoundError('생성된 자산을 찾을 수 없습니다.');
         }
 
+        console.log("Created Asset Value: ", createdAsset);
+
         return createdAsset;
     }
 

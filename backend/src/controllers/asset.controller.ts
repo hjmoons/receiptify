@@ -15,8 +15,8 @@ export class AssetController {
             }
 
             // 데이터 타입 검증
-            if (typeof balance !== 'number' || balance < 0) {
-                return res.status(400).json({ error: '잔액은 0 이상의 숫자여야 합니다.' });
+            if (typeof balance !== 'number') {
+                return res.status(400).json({ error: '잔액은 숫자만 입력해야합니다.' });
             }
 
             const assetData: CreateDTO = req.body;
@@ -132,13 +132,11 @@ export class AssetController {
 
     static async getTotalAssetValue(req: Request<{}, { totalValue: number }>, res: Response) {
         try {
-            console.log('start');
             const userId = Number(req.user?.userId);
             if (isNaN(userId) || !req.user) {
                 return res.status(401).json({ error: '인증이 필요합니다.' });
             }
             
-            console.log('되나?');
             const totalValue = await AssetService.getTotalAssetValue(userId);
             res.json({ totalValue });
         } catch (error) {

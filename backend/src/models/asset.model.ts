@@ -66,7 +66,6 @@ export class AssetModel {
             WHERE user_id = ?
         `);
         const result = stmt.get(userId) as {total: number | null};
-        console.log(result)
         return result.total || 0;
     }
 }
