@@ -92,7 +92,7 @@ export class AssetService {
 
         const hasOwnership = await AssetModel.checkOwnership(assetId, userId);
         if (!hasOwnership) {
-            throw createError.notFound(`ID ${assetId}인 자산`);
+            throw createError.permission(`ID ${assetId} 자산`);
         }
 
         return asset;
