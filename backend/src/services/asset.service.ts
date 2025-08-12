@@ -1,15 +1,6 @@
 import { Asset, CreateDTO, UpdateDTO } from "../types/asset.type";
 import { AssetModel } from "../models/asset.model";
-import {
-    DuplicateError,
-    CreateError,
-    UpdateError,
-    DeleteError,
-} from "../errors/asset.error";
-import {
-    NotFoundError,
-    PermissionError
-} from "../errors/common.error"
+import { createError } from "../errors/app.error";
 
 export class AssetService {
     static async create(assetData: CreateDTO): Promise<Asset> {
@@ -19,13 +10,13 @@ export class AssetService {
        // 2. 자산 생성
         const result = await AssetModel.create(assetData);
         if (result.changes === 0) {
-            throw new CreateError('자산 생성에 실패했습니다.');
+            throw createError.createFailed('자산');
         }
 
         // 3. 생성된 자산 반환
         const createdAsset = await AssetModel.findById(Number(result.lastInsertRowid));
         if (!createdAsset) {
-            throw new NotFoundError('생성된 자산을 찾을 수 없습니다.');
+            throw createError.notFound('생성된 자산');
         }
 
         console.log("Created Asset Value: ", createdAsset);
@@ -36,7 +27,7 @@ export class AssetService {
     static async get(id: number): Promise<Asset> {
         const asset = await AssetModel.findById(id) as Asset;
         if (!asset) {
-            throw new NotFoundError(`ID ${id}인 자산을 찾을 수 없습니다.`);
+            throw createError.notFound(`ID ${id}인 자산`);
         }
         return asset
     }
@@ -54,7 +45,7 @@ export class AssetService {
 
         // 3. 업데이트가 실제로 실행되었는지 확인
         if (result === 0) {
-            throw new UpdateError('자산 업데이트에 실패했습니다.');
+            throw createError.updateFailed('자산');
         }
 
         return await AssetModel.findById(assetData.id) as Asset;
@@ -67,7 +58,7 @@ export class AssetService {
         // 2. 자산 삭제 실행
         const result = await AssetModel.delete(id);
         if (result === 0) {
-            throw new DeleteError('자산 삭제에 실패했습니다.');
+            throw createError.deleteFailed('자산');
         }
 
         return existingAsset;
@@ -87,7 +78,7 @@ export class AssetService {
         );
         
         if (duplicateAsset) {
-            throw new DuplicateError('이미 같은 이름의 자산이 존재합니다.');
+            throw createError.duplicate('자산 이름');
         }
     }
     
@@ -96,12 +87,12 @@ export class AssetService {
         const asset = await AssetModel.findById(assetId);
         
         if (!asset) {
-            throw new NotFoundError(`ID ${assetId}인 자산을 찾을 수 없습니다.`);
+            throw createError.notFound(`ID ${assetId}인 자산`);
         }
 
         const hasOwnership = await AssetModel.checkOwnership(assetId, userId);
         if (!hasOwnership) {
-            throw new PermissionError(`ID ${assetId} 자산에 대한 권한이 없습니다.`);
+            throw createError.notFound(`ID ${assetId}인 자산`);
         }
 
         return asset;
