@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/api';
-import type { Asset, AssetForm, AssetStyle, TotalAssetsResponse } from '../../types/asset';
+import type { Asset, AssetForm, AssetStyle } from '../../types/asset';
 
 interface AssetsTabProps {
   user: {
     id: string;
     name: string;
   };
+}
+
+// API 응답 타입 정의
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  code?: string;
 }
 
 export default function AssetsTab({ user }: AssetsTabProps) {
@@ -30,8 +38,16 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     
     setAssetsLoading(true);
     try {
-      const response = await api.get<Asset[]>(`/asset?user_id=${user.id}`);
-      setAssets(response.data || []);
+      const response = await api.get<ApiResponse<Asset[]>>(`/asset?user_id=${user.id}`);
+      // 응답 형식에 따라 처리
+      if (response.data?.success && response.data.data) {
+        setAssets(response.data.data);
+      } else if (Array.isArray(response.data)) {
+        // 기존 형식 대응 (배열이 바로 오는 경우)
+        setAssets(response.data);
+      } else {
+        setAssets([]);
+      }
     } catch (error) {
       console.error('자산 목록 조회 오류:', error);
       setAssets([]);
@@ -45,8 +61,16 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     if (!user.id) return;
     
     try {
-      const response = await api.get<TotalAssetsResponse>(`/asset/total?user_id=${user.id}`);
-      setTotalAssets(response.data?.totalValue || 0);
+      const response = await api.get<ApiResponse<{ totalValue: number }>>(`/asset/total?user_id=${user.id}`);
+      // 응답 형식에 따라 처리
+      if (response.data?.success && response.data.data) {
+        setTotalAssets(response.data.data.totalValue || 0);
+      } else if (response.data && 'totalValue' in response.data) {
+        // 기존 형식 대응
+        setTotalAssets((response.data as any).totalValue || 0);
+      } else {
+        setTotalAssets(0);
+      }
     } catch (error) {
       console.error('총 자산 조회 오류:', error);
       setTotalAssets(0);
@@ -102,21 +126,31 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     setLoading(true);
     
     try {
-      const response = await api.post('/asset', {
+      const response = await api.post<ApiResponse<Asset>>('/asset', {
         user_id: user.id,
         name: accountForm.name,
         type: accountForm.type,
         balance: accountForm.balance
       });
 
-      alert('자산이 성공적으로 추가되었습니다!');
-      closeAccountModal();
-      // 자산 목록과 총합 새로고침
-      fetchAssets();
-      fetchTotalAssets();
+      // 응답 확인
+      if (response.data?.success) {
+        alert('자산이 성공적으로 추가되었습니다!');
+        closeAccountModal();
+        // 자산 목록과 총합 새로고침
+        fetchAssets();
+        fetchTotalAssets();
+      } else {
+        throw new Error(response.data?.message || '자산 추가에 실패했습니다.');
+      }
     } catch (error: any) {
       console.error('API 호출 오류:', error);
-      const errorMessage = error.response?.data?.message || '자산 추가에 실패했습니다.';
+      // 에러 메시지 처리
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        error.message || 
+        '자산 추가에 실패했습니다.';
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -130,13 +164,23 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     }
 
     try {
-      await api.delete(`/asset/${assetId}`);
-      alert('자산이 삭제되었습니다.');
-      fetchAssets(); // 목록 새로고침
-      fetchTotalAssets(); // 총합 새로고침
-    } catch (error) {
+      const response = await api.delete<ApiResponse<Asset>>(`/asset/${assetId}`);
+      
+      // 응답 확인
+      if (response.data?.success || response.status === 200 || response.status === 204) {
+        alert('자산이 삭제되었습니다.');
+        fetchAssets(); // 목록 새로고침
+        fetchTotalAssets(); // 총합 새로고침
+      } else {
+        throw new Error(response.data?.message || '자산 삭제에 실패했습니다.');
+      }
+    } catch (error: any) {
       console.error('자산 삭제 오류:', error);
-      alert('자산 삭제에 실패했습니다.');
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        '자산 삭제에 실패했습니다.';
+      alert(errorMessage);
     }
   };
 
