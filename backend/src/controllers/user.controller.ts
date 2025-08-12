@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
-import { LoginDto, RegisterDto } from '../types/auth.type';
+import { LoginDto, RegisterDto } from '../types/user.type';
 import { generateToken } from '../utils/jwt.util';
 
-export class AuthController {
+export class UserController {
   static async register(req: Request<{}, {}, RegisterDto>, res: Response) {
     try {
       const { email, password, name } = req.body;

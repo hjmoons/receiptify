@@ -1,6 +1,6 @@
 import db from '../config/database';
 import bcrypt from 'bcryptjs';
-import { User, RegisterDto } from '../types/auth.type';
+import { User, RegisterDto } from '../types/user.type';
 
 export class UserModel {
   // prepare문을 메서드 안에서 실행
@@ -31,6 +31,17 @@ export class UserModel {
       }
       throw error;
     }
+  }
+
+  static async createe(userData: RegisterDto): Promise<{changes: number, lastInsertRowid: number | bigint}> {
+      const stmt = db.prepare(`
+        INSERT INTO users (email, password, name)
+        VALUES (@email, @password, @name)
+      `);
+      
+      const result = stmt.run({userData});
+      
+      return {changes: result.changes, lastInsertRowid: result.lastInsertRowid};
   }
 
   static async findByEmail(email: string): Promise<User | undefined> {

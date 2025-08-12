@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
-import authRoutes from './routes/auth.route';
+import userRoutes from './routes/user.route';
 import assetRoutes from './routes/asset.route';
 import categoryRoutes from './routes/category.route';
 import { errorHandler } from './middlewares/error.handler';
@@ -33,7 +33,7 @@ app.get('/api-docs.json', (req, res) => {
 });
 
 // 라우트
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', userRoutes);
 app.use('/api/asset', assetRoutes);
 app.use('/api/category', categoryRoutes);
 app.use(errorHandler);
