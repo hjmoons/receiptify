@@ -1,4 +1,4 @@
-import e, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { CategoryService } from '../services/category.service';
 import { CreateDTO, UpdateDTO } from '../types/category.type';
 import { createError } from '../errors/app.error';
