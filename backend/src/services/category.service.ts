@@ -1,15 +1,6 @@
 import { CategoryModel } from "../models/category.model";
 import { Category, CreateDTO, UpdateDTO } from "../types/category.type";
-import {
-    DuplicateError,
-    CreateError,
-    UpdateError,
-    DeleteError,
-} from "../errors/category.error";
-import {
-    NotFoundError,
-    PermissionError
-} from "../errors/common.error"
+import { createError } from "../errors/app.error";
 
 export class CategoryService {
     static async create(categoryData: CreateDTO): Promise<Category> {
@@ -20,14 +11,14 @@ export class CategoryService {
         const result = await CategoryModel.create(categoryData);
         if (result.changes === 0) {
             console.log('카테고리 생성에 실패했습니다.');
-            throw new CreateError('카테고리 생성에 실패했습니다.');
+            throw createError.createFailed('카테고리');
         }
 
         // 3. 생성된 카테고리 반환
         const createdCategory = await CategoryModel.findById(Number(result.lastInsertRowid));
         if (!createdCategory) {
             console.log('생성된 카테고리를 찾을 수 없습니다.');
-            throw new NotFoundError('생성된 카테고리를 찾을 수 없습니다.');
+            throw createError.notFound('생성된 카테고리');
         }
 
         console.log("Created Category Value: ", createdCategory);
@@ -39,7 +30,7 @@ export class CategoryService {
         const category = await CategoryModel.findById(id) as Category;
         if (!category) {
             console.log(`ID ${id}인 카테고리를 찾을 수 없습니다.`);
-            throw new NotFoundError(`ID ${id}인 카테고리를 찾을 수 없습니다.`);
+            throw createError.notFound(`ID ${id}인 카테고리`);
         }
 
         console.log('Get Category Value: ', category);
@@ -106,7 +97,7 @@ export class CategoryService {
         // 4. 업데이트가 실제로 실행되었는지 확인
         if (result === 0) {
             console.log('카테고리 업데이트에 실패했습니다.');
-            throw new UpdateError('카테고리 업데이트에 실패했습니다.');
+            throw createError.updateFailed('카테고리');
         }
 
         const updatedCategory = await CategoryModel.findById(categoryId) as Category;
@@ -124,14 +115,14 @@ export class CategoryService {
         const children = await CategoryModel.findChildren(id);
         if (children.length > 0) {
             console.log('하위 카테고리가 존재하는 카테고리는 삭제할 수 없습니다.');
-            throw new DeleteError('하위 카테고리가 존재하는 카테고리는 삭제할 수 없습니다.');
+            throw createError.deleteFailed('하위 카테고리가 존재하는 카테고리');
         }
 
         // 3. 카테고리 삭제 실행
         const result = await CategoryModel.delete(id);
         if (result === 0) {
             console.log('카테고리 삭제에 실패했습니다.');
-            throw new DeleteError('카테고리 삭제에 실패했습니다.');
+            throw createError.deleteFailed('카테고리');
         }
 
         console.log('Deleted Category Value: ', existingCategory);
@@ -154,7 +145,7 @@ export class CategoryService {
         
         if (duplicateCategory) {
             console.log('같은 위치에 이미 같은 이름의 카테고리가 존재합니다.');
-            throw new DuplicateError('같은 위치에 이미 같은 이름의 카테고리가 존재합니다.');
+            throw createError.duplicate('카테고리 이름');
         }
     }
     
@@ -164,13 +155,13 @@ export class CategoryService {
         
         if (!category) {
             console.log(`ID ${categoryId}인 카테고리를 찾을 수 없습니다.`);
-            throw new NotFoundError(`ID ${categoryId}인 카테고리를 찾을 수 없습니다.`);
+            throw createError.notFound(`ID ${categoryId}인 카테고리`);
         }
 
         const hasOwnership = await CategoryModel.checkOwnership(categoryId, userId);
         if (!hasOwnership) {
             console.log(`ID ${categoryId} 카테고리에 대한 권한이 없습니다.`);
-            throw new PermissionError(`ID ${categoryId} 카테고리에 대한 권한이 없습니다.`);
+            throw createError.permission(`ID ${categoryId} 카테고리`);
         }
 
         return category;

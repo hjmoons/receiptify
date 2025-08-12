@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AssetService } from '../services/asset.service';
 import { CreateDTO, UpdateDTO, Asset } from '../types/asset.type';
-import { createError, AppError } from '../errors/app.error';
+import { createError } from '../errors/app.error';
 
 export class AssetController {
     static async create(req: Request<{}, Asset, CreateDTO>, res: Response, next: NextFunction) {
@@ -38,7 +38,7 @@ export class AssetController {
             }
             
             const asset = await AssetService.get(id);
-            res.json({
+            res.status(200).json({
                 success: true,
                 data: asset
             });
@@ -50,12 +50,9 @@ export class AssetController {
     static async getList(req: Request<{}, Asset[]>, res: Response, next: NextFunction) {
         try {
             const userId = Number(req.user?.userId);
-            if (isNaN(userId) || !req.user) {
-                throw createError.unauthorized();
-            }
             
             const assets = await AssetService.getList(userId);
-            res.json({
+            res.status(200).json({
                 success: true,
                 data: assets
             });
@@ -73,10 +70,6 @@ export class AssetController {
                 throw createError.validation('자산 ID');
             }
 
-            if (isNaN(userId) || !req.user) {
-                throw createError.unauthorized();
-            }
-
             // 업데이트할 데이터가 있는지 검증
             const { name, type, balance } = req.body;
             if (name === undefined && type === undefined && balance === undefined) {
@@ -90,7 +83,7 @@ export class AssetController {
 
             const updateData: UpdateDTO = { id, ...req.body };
             const asset = await AssetService.update(updateData, userId);
-            res.json({
+            res.status(200).json({
                 success: true,
                 data: asset
             });
@@ -108,12 +101,8 @@ export class AssetController {
                 throw createError.validation('자산 ID');
             }
 
-            if (isNaN(userId) || !req.user) {
-                throw createError.unauthorized();
-            }
-
             const deletedAsset = await AssetService.delete(id, userId);
-            res.json({
+            res.status(200).json({
                 success: true,
                 data: deletedAsset,
                 message: '자산이 성공적으로 삭제되었습니다.'
@@ -126,12 +115,9 @@ export class AssetController {
     static async getTotalAssetValue(req: Request<{}, { totalValue: number }>, res: Response, next: NextFunction) {
         try {
             const userId = Number(req.user?.userId);
-            if (isNaN(userId) || !req.user) {
-                throw createError.unauthorized();
-            }
             
             const totalValue = await AssetService.getTotalAssetValue(userId);
-            res.json({
+            res.status(200).json({
                 success: true,
                 data: { totalValue }
             });
