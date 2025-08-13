@@ -12,6 +12,7 @@ export class AppError extends BaseError {
     }
 }
 
+
 // 자주 쓰는 에러들을 팩토리 함수로 만들기
 export const createError = {
     notFound: (resource: string) => 

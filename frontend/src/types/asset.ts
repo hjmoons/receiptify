@@ -26,3 +26,18 @@ export interface AssetStyle {
 export interface TotalAssetsResponse {
   totalValue: number;
 }
+
+export interface AssetsTabProps {
+  user: {
+    id: string;
+    name: string;
+  };
+}
+
+// API 응답 타입 정의
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  code?: string;
+}

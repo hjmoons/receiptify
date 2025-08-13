@@ -1,21 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/api';
-import type { Asset, AssetForm, AssetStyle } from '../../types/asset';
+import type { Asset, AssetForm, AssetStyle, AssetsTabProps, ApiResponse } from '../../types/asset';
 
-interface AssetsTabProps {
-  user: {
-    id: string;
-    name: string;
-  };
-}
-
-// API 응답 타입 정의
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  code?: string;
-}
 
 export default function AssetsTab({ user }: AssetsTabProps) {
   // 자산 관련 상태
@@ -38,7 +24,7 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     
     setAssetsLoading(true);
     try {
-      const response = await api.get<ApiResponse<Asset[]>>(`/asset?user_id=${user.id}`);
+      const response = await api.get<ApiResponse<Asset[]>>(`/asset`);
       // 응답 형식에 따라 처리
       if (response.data?.success && response.data.data) {
         setAssets(response.data.data);
@@ -61,7 +47,7 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     if (!user.id) return;
     
     try {
-      const response = await api.get<ApiResponse<{ totalValue: number }>>(`/asset/total?user_id=${user.id}`);
+      const response = await api.get<ApiResponse<{ totalValue: number }>>(`/asset/total`);
       // 응답 형식에 따라 처리
       if (response.data?.success && response.data.data) {
         setTotalAssets(response.data.data.totalValue || 0);
