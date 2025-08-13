@@ -23,9 +23,6 @@ export class UserController {
       const user = result.user;
       const token = result.token;
 
-      console.log(user);
-      console.log(token);
-      
       res.status(201).json({
         success: true,
         user: {
