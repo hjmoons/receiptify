@@ -1,45 +1,15 @@
 import db from '../config/database';
 import bcrypt from 'bcryptjs';
-import { User, RegisterDto } from '../types/user.type';
+import { User, RegisterDTO } from '../types/user.type';
 
 export class UserModel {
-  // prepare문을 메서드 안에서 실행
-  static async create(userData: RegisterDto): Promise<User> {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    try {
+  static async create(userData: RegisterDTO): Promise<{changes: number, lastInsertRowid: number | bigint}> {
       const stmt = db.prepare(`
         INSERT INTO users (email, password, name)
         VALUES (@email, @password, @name)
       `);
       
-      const result = stmt.run({
-        email: userData.email,
-        password: hashedPassword,
-        name: userData.name
-      });
-      
-      return {
-        id: result.lastInsertRowid as number,
-        email: userData.email,
-        name: userData.name,
-        password: hashedPassword
-      };
-    } catch (error: any) {
-      if (error.message.includes('UNIQUE constraint failed')) {
-        throw new Error('이미 존재하는 이메일입니다.');
-      }
-      throw error;
-    }
-  }
-
-  static async createe(userData: RegisterDto): Promise<{changes: number, lastInsertRowid: number | bigint}> {
-      const stmt = db.prepare(`
-        INSERT INTO users (email, password, name)
-        VALUES (@email, @password, @name)
-      `);
-      
-      const result = stmt.run({userData});
+      const result = stmt.run(userData);
       
       return {changes: result.changes, lastInsertRowid: result.lastInsertRowid};
   }

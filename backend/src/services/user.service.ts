@@ -1,14 +1,14 @@
 import { UserModel } from "../models/user.model";
-import { User, RegisterDto, LoginDto } from "../types/user.type";
+import { User, RegisterDTO, LoginDTO } from "../types/user.type";
 import bcrypt from 'bcryptjs';
 import { createError } from "../errors/app.error";
 import { generateToken } from "../utils/jwt.util";
 
 export class UserService {
-    static async register(userData: RegisterDto): Promise<User> {
+    static async register(userData: RegisterDTO): Promise<{user: User, token: string}> {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-        const result = await UserModel.createe({
+        const result = await UserModel.create({
             email: userData.email,
             password: hashedPassword,
             name: userData.name
@@ -23,10 +23,12 @@ export class UserService {
             throw createError.notFound("생성된 계정");
         }
 
-        return userData;
+        const token = generateToken(createdUser.id!);
+
+        return {user: createdUser, token: token};
     }
 
-    static async login(userData: LoginDto): Promise<string> {
+    static async login(userData: LoginDTO): Promise<{user: User, token: string}> {
         const validUser = await UserModel.findByEmail(userData.email);
         if (!validUser) {
             throw createError.notFound('이메일');
@@ -39,10 +41,10 @@ export class UserService {
 
         const token = generateToken(validUser.id!);
 
-        return token;
+        return {user: validUser, token: token};
     }
 
     static async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
         return bcrypt.compare(plainPassword, hashedPassword);
-    }  
+    }
 }
