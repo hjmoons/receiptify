@@ -96,28 +96,6 @@ export class CategoryController {
         }
     }
 
-    // 계층형 카테고리 트리 조회
-    static async getCategoryTree(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const userId = parseInt(req.query.user_id as string);
-            const type = parseInt(req.query.type as string);
-
-            if (![0, 1].includes(type)) {
-                throw createError.validation('type은 0(지출) 또는 1(수입)');
-            }
-
-            const categories = await CategoryService.getCategoryTree(userId, type);
-            
-            res.status(200).json({
-                success: true,
-                data: categories
-            });
-
-        } catch (error) {
-            next(error)
-        }
-    }
-
     // 하위 카테고리 조회
     static async getChildren(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {

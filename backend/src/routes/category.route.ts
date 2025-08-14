@@ -207,38 +207,6 @@ router.post('/', authMiddleware, CategoryController.create);
 
 /**
  * @swagger
- * /api/category/tree:
- *   get:
- *     summary: 계층형 카테고리 트리 조회
- *     tags: [Categories]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: type
- *         required: true
- *         schema:
- *           type: integer
- *           enum: [0, 1]
- *         description: 카테고리 유형 (0 지출, 1 수입)
- *     responses:
- *       200:
- *         description: 계층형 카테고리 트리 반환
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/CategoryTree'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- */
-router.get('/tree', authMiddleware, CategoryController.getCategoryTree);
-
-/**
- * @swagger
  * /api/category/type:
  *   get:
  *     summary: 타입별 카테고리 목록 조회

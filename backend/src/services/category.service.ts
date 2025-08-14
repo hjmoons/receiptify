@@ -55,15 +55,6 @@ export class CategoryService {
         return categories;
     }
 
-    // 계층형 카테고리 트리 조회
-    static async getCategoryTree(userId: number, type: number): Promise<Category[]> {
-        const categories = await CategoryModel.findCategoryTree(userId, type);
-
-        console.log('Get Category Tree Values: ', categories);
-
-        return categories;
-    }
-
     // 하위 카테고리 조회
     static async getChildren(parentId: number): Promise<Category[]> {
         const categories = await CategoryModel.findChildren(parentId);

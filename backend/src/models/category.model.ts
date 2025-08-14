@@ -80,15 +80,4 @@ export class CategoryModel {
         `);
         return stmt.all(parentId) as Category[];
     }
-
-    // 계층형 카테고리 트리 조회 (특정 사용자의 특정 타입)
-    static async findCategoryTree(userId: number, type: number): Promise<Category[]> {
-        const stmt = db.prepare(`
-            SELECT * 
-            FROM categories 
-            WHERE user_id = ? AND type = ?
-            ORDER BY level ASC, parent_id ASC, id ASC
-        `);
-        return stmt.all(userId, type) as Category[];
-    }
 }
