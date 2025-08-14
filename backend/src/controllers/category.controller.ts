@@ -8,10 +8,25 @@ export class CategoryController {
     static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const categoryData: CreateDTO = req.body;
+
+            // 입력값 검증 - 카테고리명
+            if (!categoryData.name) {
+                throw createError.validation('name');
+            }
+
+            // 입력값 검증 - 카테고리 타입 (0: 지출, 1: 수입)
+            if (!(categoryData.type == 0 || categoryData.type == 1)) {
+                throw createError.validation('type');
+            }
             
-            // 입력 값 검증
-            if (!categoryData.name || !(categoryData.type == 0 || categoryData.type == 1) || !(categoryData.level > 0 && categoryData.level < 4) || !categoryData.user_id) {
-                throw createError.validation('name, type, level, user_id');
+            // 입력값 검증 - 카테고리 레벨
+            if (!(categoryData.level > 0 && categoryData.level < 4)) {
+                throw createError.validation('level');
+            }
+
+            // 입력값 검증 - 사용자 id 값
+            if (!categoryData.user_id) {
+                throw createError.validation('user_id')
             }
 
             // level 값 검증 (1, 2, 3만 허용)
