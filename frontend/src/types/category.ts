@@ -1,8 +1,8 @@
 export interface Category {
   id: number;
   name: string;
-  type: number; // 0: 지출, 1: 수입
-  level: number;
+  type: 0 | 1; // 0: 지출, 1: 수입
+  level: 1 | 2 | 3;
   parent_id: number | null;
   created_at: string;
   updated_at: string;
@@ -12,7 +12,7 @@ export interface Category {
 export interface CategoryTree {
   id: number;
   name: string;
-  type: number;
-  level: number;
+  type: 0 | 1;
+  level: 1 | 2 | 3;
   children: CategoryTree[];
 }
