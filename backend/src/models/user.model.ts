@@ -1,5 +1,4 @@
 import db from '../config/database';
-import bcrypt from 'bcryptjs';
 import { User, RegisterDTO } from '../types/user.type';
 
 export class UserModel {
@@ -22,9 +21,5 @@ export class UserModel {
   static async findById(id: number): Promise<User | undefined> {
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     return stmt.get(id) as User | undefined;
-  }
-
-  static async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(plainPassword, hashedPassword);
   }
 }

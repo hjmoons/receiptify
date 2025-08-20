@@ -29,7 +29,7 @@ export class AssetService {
         if (!asset) {
             throw createError.notFound(`ID ${id}인 자산`);
         }
-        return asset
+        return asset;
     }
 
     static async getList(userId: number): Promise<Asset[]> {
