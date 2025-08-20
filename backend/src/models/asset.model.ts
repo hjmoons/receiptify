@@ -49,7 +49,7 @@ export class AssetModel {
         return result.changes;
     } 
 
-    static async checkOwnership(assetId: number, userId: number): Promise<Boolean> {
+    static async checkOwnership(assetId: number, userId: number): Promise<boolean> {
         const stmt = db.prepare(`
             SELECT user_id
             FROM assets

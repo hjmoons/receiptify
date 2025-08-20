@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS categories (
   -- 수입/지출 내역 테이블
   CREATE TABLE IF NOT EXISTS receipts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type INTEGER NOT NULL CHECK (type IN (1, 2, 3)), -- 1: expenditure, 2: income, 3: transfer
+      type INTEGER NOT NULL CHECK (type IN (0, 1, 2)), -- 0: expenditure, 1: income, 2: transfer
       cost INTEGER NOT NULL,
       content TEXT,
       location TEXT,
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS categories (
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       user_id INTEGER NOT NULL,
       asset_id INTEGER NOT NULL,
+      trs_asset_id INTEGER,
       category_id INTEGER,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
