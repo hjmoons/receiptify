@@ -3,12 +3,33 @@ import { Receipt, CreateDTO, UpdateDTO } from "../types/receipt.type";
 
 export class ReceiptModel {
     static async create(receiptData: CreateDTO): Promise<{changes: number, lastInsertRowid: number | bigint}> {
-        const stmt = db.prepare(`
-            INSERT INTO receipts (type, cost, content, location, user_id, asset_id, trs_asset_id, category_id)
-            VALUES (@type, @cost, @content, @location, @user_id, @asset_id, @trs_asset_id, @category_id)
-        `);
-        const result = stmt.run(receiptData);
-        return {changes: result.changes, lastInsertRowid: result.lastInsertRowid};
+        const transaction = db.transaction(() => {
+            // 1. 거래 내역 추가
+            const stmt = db.prepare(`
+                INSERT INTO receipts (type, cost, content, location, user_id, asset_id, trs_asset_id, category_id)
+                VALUES (@type, @cost, @content, @location, @user_id, @asset_id, @trs_asset_id, @category_id)
+            `);
+            const result = stmt.run(receiptData);
+            
+            // 2. 자산 잔액 업데이트
+            if (receiptData.type === 0 || receiptData.type === 1) {
+                // type: 0=지출, 1=수입
+                const adjustAmount = receiptData.type === 1 ? receiptData.cost : -receiptData.cost;
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(adjustAmount, receiptData.asset_id);
+            } else if (receiptData.type === 2 && receiptData.trs_asset_id) {
+                // 이체: 출금 계좌에서 빼고
+                db.prepare(`UPDATE assets SET balance = balance - ? WHERE id = ?`)
+                  .run(receiptData.cost, receiptData.asset_id);
+                // 입금 계좌에 더하기
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(receiptData.cost, receiptData.trs_asset_id);
+            }
+            
+            return {changes: result.changes, lastInsertRowid: result.lastInsertRowid};
+        });
+        
+        return transaction();
     }
 
     static async findById(id: number): Promise<Receipt | undefined> {
@@ -31,22 +52,95 @@ export class ReceiptModel {
     }
 
     static async update(receiptData: UpdateDTO) : Promise<number> {
-        const stmt = db.prepare(`
-            UPDATE receipts 
-            SET type=@type, cost=@cost, content=@content, location=@location, asset_id=@asset_id, trs_asset_id=@trs_asset_id, category_id=@category_id
-            WHERE id=@id
-        `);
-        const result = stmt.run(receiptData);
-        return result.changes
+        const transaction = db.transaction(() => {
+            // 1. 기존 거래 정보 조회
+            const oldReceipt = db.prepare(`
+                SELECT type, cost, asset_id, trs_asset_id 
+                FROM receipts 
+                WHERE id = ?
+            `).get(receiptData.id) as {type: number, cost: number, asset_id: number, trs_asset_id: number | null} | undefined;
+            
+            if (!oldReceipt) {
+                throw new Error('거래를 찾을 수 없습니다');
+            }
+            
+            // 2. 기존 거래 영향 복구
+            if (oldReceipt.type === 0 || oldReceipt.type === 1) {
+                const adjustAmount = oldReceipt.type === 0 ? oldReceipt.cost : -oldReceipt.cost;
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(adjustAmount, oldReceipt.asset_id);
+            } else if (oldReceipt.type === 2 && oldReceipt.trs_asset_id) {
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(oldReceipt.cost, oldReceipt.asset_id);
+                db.prepare(`UPDATE assets SET balance = balance - ? WHERE id = ?`)
+                  .run(oldReceipt.cost, oldReceipt.trs_asset_id);
+            }
+            
+            // 3. 거래 정보 업데이트
+            const stmt = db.prepare(`
+                UPDATE receipts 
+                SET type=@type, cost=@cost, content=@content, location=@location, asset_id=@asset_id, trs_asset_id=@trs_asset_id, category_id=@category_id
+                WHERE id=@id
+            `);
+            const result = stmt.run(receiptData);
+            
+            // 4. 새로운 거래 영향 적용
+            if (receiptData.type === 0 || receiptData.type === 1) {
+                const adjustAmount = receiptData.type === 1 ? receiptData.cost : -receiptData.cost;
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(adjustAmount, receiptData.asset_id);
+            } else if (receiptData.type === 2 && receiptData.trs_asset_id) {
+                db.prepare(`UPDATE assets SET balance = balance - ? WHERE id = ?`)
+                  .run(receiptData.cost, receiptData.asset_id);
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(receiptData.cost, receiptData.trs_asset_id);
+            }
+            
+            return result.changes;
+        });
+        
+        return transaction();
     }
 
     static async delete(id: number): Promise<number> {
-        const stmt = db.prepare(`
-            DELETE FROM receipts
-            WHERE id = ? 
-        `)
-        const result = stmt.run(id);
-        return result.changes;
+        const transaction = db.transaction(() => {
+            // 1. 삭제할 거래 정보 조회
+            const receipt = db.prepare(`
+                SELECT type, cost, asset_id, trs_asset_id 
+                FROM receipts 
+                WHERE id = ?
+            `).get(id) as {type: number, cost: number, asset_id: number, trs_asset_id: number | null} | undefined;
+            
+            if (!receipt) {
+                throw new Error('거래를 찾을 수 없습니다');
+            }
+            
+            // 2. 자산 잔액 복구
+            if (receipt.type === 0 || receipt.type === 1) {
+                // 지출이면 다시 더하고, 수입이면 다시 빼기
+                const adjustAmount = receipt.type === 0 ? receipt.cost : -receipt.cost;
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(adjustAmount, receipt.asset_id);
+            } else if (receipt.type === 2 && receipt.trs_asset_id) {
+                // 이체 복구: 출금 계좌에 다시 더하고
+                db.prepare(`UPDATE assets SET balance = balance + ? WHERE id = ?`)
+                  .run(receipt.cost, receipt.asset_id);
+                // 입금 계좌에서 다시 빼기
+                db.prepare(`UPDATE assets SET balance = balance - ? WHERE id = ?`)
+                  .run(receipt.cost, receipt.trs_asset_id);
+            }
+            
+            // 3. 거래 삭제
+            const stmt = db.prepare(`
+                DELETE FROM receipts
+                WHERE id = ? 
+            `);
+            const result = stmt.run(id);
+            
+            return result.changes;
+        });
+        
+        return transaction();
     } 
 
     static async checkOwnership(receiptId: number, userId: number): Promise<boolean> {

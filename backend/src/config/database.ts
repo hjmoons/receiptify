@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS categories (
       category_id INTEGER,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
-      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+      FOREIGN KEY (trs_asset_id) REFERENCES assets(id) on DELETE SET NULL
   );
 
   -- 통계 테이블
