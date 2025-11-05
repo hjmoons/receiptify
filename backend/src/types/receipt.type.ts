@@ -8,8 +8,8 @@ export interface Receipt {
   updated_at?: string;
   user_id: number;
   asset_id: number;
-  trs_asset_id: number;
-  category_id: number;
+  trs_asset_id: number | null;
+  category_id: number | null;
 }
 
 export interface CreateDTO {
@@ -19,8 +19,8 @@ export interface CreateDTO {
     location: string;
     user_id: number;
     asset_id: number;
-    trs_asset_id: number;
-    category_id: number;
+    trs_asset_id: number | null;
+    category_id: number | null;
 }
 
 export interface UpdateDTO {
@@ -30,6 +30,6 @@ export interface UpdateDTO {
     content: string;
     location: string;
     asset_id: number;
-    trs_asset_id: number;
-    category_id: number;
+    trs_asset_id: number | null;
+    category_id: number | null;
 }

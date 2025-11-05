@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/api';
+import { formatCurrency } from '../../utils/format';
 import type { Asset, AssetStyle, AssetsTabProps, ApiResponse } from '../../types/asset';
 
 
@@ -92,10 +93,6 @@ export default function AssetsTab({ user }: AssetsTabProps) {
     }
   };
 
-  // 금액 포맷팅
-  const formatCurrency = (amount: number): string => {
-    return `₩${amount.toLocaleString()}`;
-  };
 
   return (
     <>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { formatCurrency } from '../utils/format';
 import type { Asset } from '../types/asset';
 
 export const useAssets = () => {
@@ -46,27 +47,6 @@ export const useAssets = () => {
     fetchAssets();
   }, []);
 
-  // 자산 추가
-  const addAsset = async (assetData: { user_id: number; name: string; type: string; balance: number }) => {
-    try {
-      const response = await api.post('/asset', assetData);
-
-      if (response.data?.success || response.status === 200 || response.status === 201) {
-        return { success: true, message: '자산이 성공적으로 추가되었습니다!' };
-      } else {
-        throw new Error(response.data?.message || '자산 추가에 실패했습니다.');
-      }
-    } catch (error: any) {
-      console.error('API 호출 오류:', error);
-      const errorMessage = 
-        error.response?.data?.message || 
-        error.response?.data?.error || 
-        error.message || 
-        '자산 추가에 실패했습니다.';
-      return { success: false, message: errorMessage };
-    }
-  };
-
   // 자산 타입 표시 함수
   const getAssetTypeDisplay = (type: string) => {
     const typeMap: Record<string, string> = {
@@ -76,17 +56,11 @@ export const useAssets = () => {
     return typeMap[type] || '기타';
   };
 
-  // 통화 포맷팅
-  const formatCurrency = (amount: number) => {
-    return `₩${amount.toLocaleString()}`;
-  };
-
   return {
     assets,
     loading,
     error,
     fetchAssets,
-    addAsset,
     getAssetTypeDisplay,
     formatCurrency
   };

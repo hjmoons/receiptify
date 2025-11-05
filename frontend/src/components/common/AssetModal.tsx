@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { AssetForm, Asset } from '../../types/asset';
+import api from '../../utils/api';
 
 interface User {
   id: number;
@@ -63,9 +64,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({
     setLoading(true);
     
     try {
-      // API 호출은 여기서 직접 수행
-      const api = (await import('../../utils/api')).default;
-      
       let response;
       
       if (editingAsset) {

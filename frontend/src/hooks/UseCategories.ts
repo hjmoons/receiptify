@@ -43,11 +43,6 @@ export const useCategories = () => {
     }
   };
 
-  // 컴포넌트 마운트 시 자동으로 데이터 가져오기 (하지만 섹션이 열릴 때만)
-  // useEffect(() => {
-  //   fetchCategories();
-  // }, []);
-
   // 카테고리 추가
   const addCategory = async (categoryData: { name: string; type: number; user_id: number; parent_id: number | null }) => {
     try {

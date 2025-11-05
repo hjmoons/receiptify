@@ -1,8 +1,8 @@
-import express from 'express';
+import { Router } from 'express';
 import { AssetController } from '../controllers/asset.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger

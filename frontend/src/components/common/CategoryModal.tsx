@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { Category } from '../../types/category';
 
 interface CategoryModalProps {

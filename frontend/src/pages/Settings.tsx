@@ -130,14 +130,14 @@ export default function Settings() {
               {expandedSection === section.id && (
                 <div className="px-6 pb-4 border-t border-gray-100">
                   {section.id === 'assets' && (
-                    <AssetSection 
-                      user={user} 
+                    <AssetSection
+                      user={user}
                       loading={assetsLoading}
                     />
                   )}
                   {section.id === 'categories' && (
-                    <CategorySection 
-                      user={user} 
+                    <CategorySection
+                      user={user}
                       loading={categoriesLoading}
                     />
                   )}

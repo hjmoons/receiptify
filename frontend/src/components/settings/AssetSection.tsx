@@ -3,6 +3,7 @@ import { useAssets } from '../../hooks/UseAssets';
 import { useKebabMenu } from '../../hooks/UseKebabMenu';
 import { AssetModal } from '../common/AssetModal';
 import type { Asset } from '../../types/asset';
+import api from '../../utils/api';
 
 interface User {
   id: number;
@@ -90,8 +91,6 @@ export const AssetSection: React.FC<AssetSectionProps> = ({ user, loading }) => 
     closeMenu();
 
     try {
-      // API 호출
-      const api = (await import('../../utils/api')).default;
       const response = await api.delete(`/asset/${asset.id}`);
       
       if (response.data?.success || response.status === 200 || response.status === 204) {
@@ -173,11 +172,6 @@ export const AssetSection: React.FC<AssetSectionProps> = ({ user, loading }) => 
               등록된 자산이 없습니다. (현재 {assets.length}개)
             </div>
           )}
-          
-          {/* 디버깅용 - 나중에 제거 */}
-          <div className="text-xs text-gray-400 mt-2">
-            총 {assets.length}개 자산
-          </div>
         </div>
       )}
       

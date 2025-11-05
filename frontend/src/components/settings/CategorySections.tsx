@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useCategories } from '../../hooks/UseCategories';
 import { useKebabMenu } from '../../hooks/UseKebabMenu';
 import { KebabMenu } from './KebabMenu';
@@ -347,13 +347,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ user, loading 
                 )}
               </div>
             )}
-          </div>
-
-          {/* 디버깅용 정보 */}
-          <div className="text-xs text-gray-400 mt-4 space-y-1">
-            <div>총 {categories.length}개 카테고리</div>
-            <div>수입: {categories.filter(c => c.type === 1).length}개</div>
-            <div>지출: {categories.filter(c => c.type === 0).length}개</div>
           </div>
         </div>
       )}
