@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS categories (
       cost INTEGER NOT NULL,
       content TEXT,
       location TEXT,
+      transaction_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- 거래 발생 날짜/시간
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       user_id INTEGER NOT NULL,
@@ -87,6 +88,7 @@ CREATE TABLE IF NOT EXISTS categories (
   CREATE INDEX IF NOT EXISTS idx_receipts_user_id ON receipts(user_id);
   CREATE INDEX IF NOT EXISTS idx_receipts_asset_id ON receipts(asset_id);
   CREATE INDEX IF NOT EXISTS idx_receipts_category_id ON receipts(category_id);
+  CREATE INDEX IF NOT EXISTS idx_receipts_transaction_date ON receipts(transaction_date);
   CREATE INDEX IF NOT EXISTS idx_receipts_created_at ON receipts(created_at);
   CREATE INDEX IF NOT EXISTS idx_statistics_asset_id ON statistics(asset_id);
   CREATE INDEX IF NOT EXISTS idx_statistics_year_month ON statistics(year, month);

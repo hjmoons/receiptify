@@ -25,7 +25,10 @@ export class ReceiptService {
         return recipt;
     }
 
-    static async getList(userId: number): Promise<Receipt[]> {
+    static async getList(userId: number, year?: number, month?: number): Promise<Receipt[]> {
+        if (year && month) {
+            return await ReceiptModel.findByUserIdAndMonth(userId, year, month);
+        }
         return await ReceiptModel.findByUserId(userId);
     }
     
@@ -57,9 +60,8 @@ export class ReceiptService {
         return existingReceipt;
     }
 
-    static async getTotalExpendIncome(userId: number): Promise<{expend: number, income: number}> {
-        const result = await ReceiptModel.getTotalExpendIncome(userId);
-        console.log('Total Expend, Income Value: ', result);
+    static async getTotalExpendIncome(userId: number, year?: number, month?: number): Promise<{expend: number, income: number}> {
+        const result = await ReceiptModel.getTotalExpendIncome(userId, year, month);
 
         // 결과가 아무것도 없을 경우
         if(!result) {

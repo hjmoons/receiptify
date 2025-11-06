@@ -6,10 +6,13 @@ export class ReceiptModel {
         const transaction = db.transaction(() => {
             // 1. 거래 내역 추가
             const stmt = db.prepare(`
-                INSERT INTO receipts (type, cost, content, location, user_id, asset_id, trs_asset_id, category_id)
-                VALUES (@type, @cost, @content, @location, @user_id, @asset_id, @trs_asset_id, @category_id)
+                INSERT INTO receipts (type, cost, content, location, transaction_date, user_id, asset_id, trs_asset_id, category_id)
+                VALUES (@type, @cost, @content, @location, @transaction_date, @user_id, @asset_id, @trs_asset_id, @category_id)
             `);
-            const result = stmt.run(receiptData);
+            const result = stmt.run({
+                ...receiptData,
+                transaction_date: receiptData.transaction_date || new Date().toISOString()
+            });
             
             // 2. 자산 잔액 업데이트
             if (receiptData.type === 0 || receiptData.type === 1) {
@@ -43,12 +46,24 @@ export class ReceiptModel {
 
     static async findByUserId(userId: number): Promise<Receipt[]> {
         const stmt = db.prepare(
-            `SELECT * 
-            FROM receipts 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC, id DESC
+            `SELECT *
+            FROM receipts
+            WHERE user_id = ?
+            ORDER BY transaction_date DESC, id DESC
         `);
         return stmt.all(userId) as Receipt[];
+    }
+
+    static async findByUserIdAndMonth(userId: number, year: number, month: number): Promise<Receipt[]> {
+        const stmt = db.prepare(
+            `SELECT *
+            FROM receipts
+            WHERE user_id = ?
+            AND strftime('%Y', transaction_date) = ?
+            AND strftime('%m', transaction_date) = ?
+            ORDER BY transaction_date DESC, id DESC
+        `);
+        return stmt.all(userId, year.toString(), month.toString().padStart(2, '0')) as Receipt[];
     }
 
     static async update(receiptData: UpdateDTO) : Promise<number> {
@@ -77,12 +92,30 @@ export class ReceiptModel {
             }
             
             // 3. 거래 정보 업데이트
-            const stmt = db.prepare(`
-                UPDATE receipts 
-                SET type=@type, cost=@cost, content=@content, location=@location, asset_id=@asset_id, trs_asset_id=@trs_asset_id, category_id=@category_id
-                WHERE id=@id
-            `);
-            const result = stmt.run(receiptData);
+            const updateData: any = {
+                id: receiptData.id,
+                type: receiptData.type,
+                cost: receiptData.cost,
+                content: receiptData.content,
+                location: receiptData.location,
+                asset_id: receiptData.asset_id,
+                trs_asset_id: receiptData.trs_asset_id,
+                category_id: receiptData.category_id
+            };
+
+            let updateQuery = `
+                UPDATE receipts
+                SET type=@type, cost=@cost, content=@content, location=@location, asset_id=@asset_id, trs_asset_id=@trs_asset_id, category_id=@category_id`;
+
+            if (receiptData.transaction_date) {
+                updateQuery += `, transaction_date=@transaction_date`;
+                updateData.transaction_date = receiptData.transaction_date;
+            }
+
+            updateQuery += ` WHERE id=@id`;
+
+            const stmt = db.prepare(updateQuery);
+            const result = stmt.run(updateData);
             
             // 4. 새로운 거래 영향 적용
             if (receiptData.type === 0 || receiptData.type === 1) {
@@ -153,16 +186,25 @@ export class ReceiptModel {
         return receipt ? receipt.user_id === userId : false
     }
 
-    static async getTotalExpendIncome(userId: number): Promise<{expend: number, income: number} | undefined> {
-        const stmt = db.prepare(`
-            SELECT 
+    static async getTotalExpendIncome(userId: number, year?: number, month?: number): Promise<{expend: number, income: number} | undefined> {
+        let query = `
+            SELECT
                 COALESCE(SUM(CASE WHEN type = 0 THEN cost END), 0) AS expend,
                 COALESCE(SUM(CASE WHEN type = 1 THEN cost END), 0) AS income
-            FROM receipts 
-            WHERE user_id = ? 
-            AND type IN (0, 1)
-            AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')  
-        `);
-        return stmt.get(userId) as {expend: number, income: number} | undefined;
+            FROM receipts
+            WHERE user_id = ?
+            AND type IN (0, 1)`;
+
+        const params: any[] = [userId];
+
+        if (year && month) {
+            query += ` AND strftime('%Y', transaction_date) = ? AND strftime('%m', transaction_date) = ?`;
+            params.push(year.toString(), month.toString().padStart(2, '0'));
+        } else {
+            query += ` AND strftime('%Y-%m', transaction_date) = strftime('%Y-%m', 'now')`;
+        }
+
+        const stmt = db.prepare(query);
+        return stmt.get(...params) as {expend: number, income: number} | undefined;
     }
 }

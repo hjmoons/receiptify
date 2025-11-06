@@ -6,6 +6,7 @@ import { swaggerSpec } from './config/swagger';
 import userRoutes from './routes/user.route';
 import assetRoutes from './routes/asset.route';
 import categoryRoutes from './routes/category.route';
+import receiptRoutes from './routes/receipt.route';
 import { errorHandler } from './middlewares/error.handler';
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.get('/api-docs.json', (req, res) => {
 app.use('/api/auth', userRoutes);
 app.use('/api/asset', assetRoutes);
 app.use('/api/category', categoryRoutes);
+app.use('/api/receipt', receiptRoutes);
 app.use(errorHandler);
 
 app.get('/api', (req, res) => {
