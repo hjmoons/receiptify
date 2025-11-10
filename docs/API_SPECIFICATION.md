@@ -793,25 +793,227 @@ Authorization: Bearer {token}
 
 ## 5. 통계 및 분석 (Statistics)
 
-> **구현 상태**: 미구현
+> **구현 상태**: 부분 구현 (월별 통계, 카테고리별 통계 완료)
 
-### 5.1 월별 지출 통계 🔒
+### 5.1 월별 지출/수입 통계 조회 🔒
 
 **Endpoint:** `GET /api/statistics/monthly?year={year}&month={month}`
 
-**설명:** 특정 월의 지출 통계를 조회합니다.
+**설명:** 특정 월의 지출/수입 통계를 조회합니다.
 
-**구현 예정**
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `year`: 연도 (필수, 예: 2024)
+- `month`: 월 (필수, 1-12)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "year": 2024,
+    "month": 1,
+    "totalExpenditure": 150000,
+    "totalIncome": 300000,
+    "balance": 150000,
+    "transactionCount": 25
+  }
+}
+```
+
+**필드 설명:**
+- `totalExpenditure`: 총 지출 금액
+- `totalIncome`: 총 수입 금액
+- `balance`: 수입 - 지출 (양수: 흑자, 음수: 적자)
+- `transactionCount`: 거래 건수 (지출 + 수입)
+
+**Error Responses:**
+- `400 Bad Request`: 필수 쿼리 파라미터 누락 또는 잘못된 형식
+  ```json
+  {
+    "success": false,
+    "message": "연도 (year) 필드가 올바르지 않습니다."
+  }
+  ```
+- `401 Unauthorized`: 인증 실패
 
 ---
 
-### 5.2 카테고리별 지출 분석 🔒
+### 5.2 카테고리별 지출/수입 분석 🔒
 
-**Endpoint:** `GET /api/statistics/category?year={year}&month={month}`
+**Endpoint:** `GET /api/statistics/category?year={year}&month={month}&type={type}`
 
-**설명:** 카테고리별 지출 비중을 조회합니다.
+**설명:** 특정 월의 카테고리별 지출/수입 통계를 조회합니다.
 
-**구현 예정**
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `year`: 연도 (필수, 예: 2024)
+- `month`: 월 (필수, 1-12)
+- `type`: 거래 유형 (선택, 0=지출, 1=수입, 기본값: 0)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "categoryId": 1,
+      "categoryName": "식비",
+      "categoryLevel": 1,
+      "parentId": null,
+      "totalAmount": 80000,
+      "transactionCount": 15,
+      "percentage": 53.33
+    },
+    {
+      "categoryId": 2,
+      "categoryName": "교통비",
+      "categoryLevel": 1,
+      "parentId": null,
+      "totalAmount": 50000,
+      "transactionCount": 8,
+      "percentage": 33.33
+    },
+    {
+      "categoryId": 3,
+      "categoryName": "문화생활",
+      "categoryLevel": 1,
+      "parentId": null,
+      "totalAmount": 20000,
+      "transactionCount": 2,
+      "percentage": 13.33
+    }
+  ]
+}
+```
+
+**필드 설명:**
+- `categoryId`: 카테고리 ID
+- `categoryName`: 카테고리 이름
+- `categoryLevel`: 카테고리 계층 레벨 (1, 2, 3)
+- `parentId`: 부모 카테고리 ID (1단계는 null)
+- `totalAmount`: 해당 카테고리의 총 금액
+- `transactionCount`: 거래 건수
+- `percentage`: 전체 지출/수입 대비 비율 (%)
+
+**특징:**
+- 금액이 0인 카테고리는 결과에 포함되지 않음
+- 금액이 큰 순서대로 정렬됨
+- 비율은 소수점 둘째 자리까지 표시
+
+**Error Responses:**
+- `400 Bad Request`: 필수 쿼리 파라미터 누락 또는 잘못된 형식
+- `401 Unauthorized`: 인증 실패
+
+---
+
+### 5.3 최근 N개월 월별 통계 조회 🔒
+
+**Endpoint:** `GET /api/statistics/recent?months={months}`
+
+**설명:** 최근 N개월의 월별 지출/수입 통계를 조회합니다.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `months`: 조회할 개월 수 (선택, 기본값: 6, 범위: 1-12)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "year": 2024,
+      "month": 1,
+      "totalExpenditure": 150000,
+      "totalIncome": 300000,
+      "balance": 150000,
+      "transactionCount": 25
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "totalExpenditure": 180000,
+      "totalIncome": 280000,
+      "balance": 100000,
+      "transactionCount": 30
+    }
+  ]
+}
+```
+
+**특징:**
+- 최근 월부터 과거 순으로 정렬
+- 그래프 표시에 적합한 형식
+- 프론트엔드에서 월별 추이 분석에 활용
+
+**Error Responses:**
+- `400 Bad Request`: 잘못된 개월 수 (1-12 범위 벗어남)
+- `401 Unauthorized`: 인증 실패
+
+---
+
+### 5.4 카테고리별 월별 지출 추이 조회 🔒
+
+**Endpoint:** `GET /api/statistics/category/:id/trend?months={months}`
+
+**설명:** 특정 카테고리의 최근 N개월 지출 추이를 조회합니다.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**URL Parameters:**
+- `id`: 카테고리 ID (필수)
+
+**Query Parameters:**
+- `months`: 조회할 개월 수 (선택, 기본값: 6, 범위: 1-12)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "year": 2024,
+      "month": 1,
+      "totalAmount": 80000
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "totalAmount": 75000
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "totalAmount": 90000
+    }
+  ]
+}
+```
+
+**특징:**
+- 특정 카테고리의 지출 패턴 분석에 활용
+- 최근 월부터 과거 순으로 정렬
+- 지출만 집계 (type = 0)
+
+**Error Responses:**
+- `400 Bad Request`: 잘못된 카테고리 ID 또는 개월 수
+- `401 Unauthorized`: 인증 실패
 
 ---
 
