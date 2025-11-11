@@ -27,7 +27,7 @@ export default function AssetsTab({ user }: AssetsTabProps) {
         setAssets([]);
       }
     } catch (error) {
-      console.error('자산 목록 조회 오류:', error);
+      if (import.meta.env.DEV) console.error('자산 목록 조회 오류:', error);
       setAssets([]);
     } finally {
       setAssetsLoading(false);
@@ -50,7 +50,7 @@ export default function AssetsTab({ user }: AssetsTabProps) {
         setTotalAssets(0);
       }
     } catch (error) {
-      console.error('총 자산 조회 오류:', error);
+      if (import.meta.env.DEV) console.error('총 자산 조회 오류:', error);
       setTotalAssets(0);
     }
   };

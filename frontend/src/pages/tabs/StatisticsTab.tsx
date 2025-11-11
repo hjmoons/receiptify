@@ -42,7 +42,7 @@ export default function StatisticsTab() {
       setMonthlyTrend(trendData);
       setTopCategories(topData);
     } catch (err) {
-      console.error('통계 로드 실패:', err);
+      if (import.meta.env.DEV) console.error('통계 로드 실패:', err);
       setError('통계 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ export default function StatisticsTab() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+                  label={(entry: any) => `${entry.name} ${entry.percentage.toFixed(1)}%`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"

@@ -78,7 +78,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         setForm(prev => ({ ...prev, asset_id: assetData[0].id }));
       }
     } catch (error) {
-      console.error('자산 목록 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('자산 목록 불러오기 실패:', error);
       setAssets([]);
     }
   };
@@ -89,7 +89,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       const categoryData = Array.isArray(response.data) ? response.data : [];
       setCategories(categoryData);
     } catch (error) {
-      console.error('카테고리 목록 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('카테고리 목록 불러오기 실패:', error);
       setCategories([]);
     }
   };
@@ -156,7 +156,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         throw new Error(response.data?.message || `가계부 내역 ${editingReceipt ? '수정' : '추가'}에 실패했습니다.`);
       }
     } catch (error: any) {
-      console.error('API 호출 오류:', error);
+      if (import.meta.env.DEV) console.error('API 호출 오류:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||

@@ -52,7 +52,7 @@ export default function BudgetTab() {
         });
       }
     } catch (error) {
-      console.error('데이터 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('데이터 불러오기 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ export default function BudgetTab() {
       alert('내역이 삭제되었습니다.');
       fetchData(); // 목록 새로고침
     } catch (error: any) {
-      console.error('삭제 실패:', error);
+      if (import.meta.env.DEV) console.error('삭제 실패:', error);
       alert(error.response?.data?.message || '삭제에 실패했습니다.');
     }
   };

@@ -100,7 +100,7 @@ export const AssetSection: React.FC<AssetSectionProps> = ({ user, loading }) => 
         throw new Error(response.data?.message || '자산 삭제에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('자산 삭제 오류:', error);
+      if (import.meta.env.DEV) console.error('자산 삭제 오류:', error);
       const errorMessage = 
         error.response?.data?.message || 
         error.response?.data?.error || 

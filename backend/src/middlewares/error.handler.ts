@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { BaseError } from '../errors/base.error';
 
 export const errorHandler = (
-    err: Error, 
-    req: Request, 
-    res: Response, 
+    err: Error,
+    _req: Request,
+    res: Response,
     next: NextFunction
 ) => {
     // 이미 응답이 전송된 경우
@@ -23,9 +23,14 @@ export const errorHandler = (
     
     // 예상치 못한 에러는 로깅하고 일반적인 메시지 반환
     console.error('Unexpected error:', err);
+
+    // 개발 환경에서만 스택 트레이스 포함
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     return res.status(500).json({
         success: false,
         code: 'INTERNAL_ERROR',
-        message: '서버 에러가 발생했습니다'
+        message: '서버 에러가 발생했습니다',
+        ...(isDevelopment && { stack: err.stack, details: err.message })
     });
 };

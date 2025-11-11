@@ -25,16 +25,22 @@ export const useAssets = () => {
       } else if (response.data && response.data.assets && Array.isArray(response.data.assets)) {
         assetData = response.data.assets;
       } else {
-        console.error('알 수 없는 데이터 구조:', response.data);
+        if (import.meta.env.DEV) {
+          console.error('알 수 없는 데이터 구조:', response.data);
+        }
         setError('잘못된 데이터 형식입니다.');
         return;
       }
-      
-      console.log('추출된 자산 데이터:', assetData);
+
+      if (import.meta.env.DEV) {
+        console.log('추출된 자산 데이터:', assetData);
+      }
       setAssets(assetData);
-      
+
     } catch (err: any) {
-      console.error('자산 목록 에러:', err);
+      if (import.meta.env.DEV) {
+        console.error('자산 목록 에러:', err);
+      }
       const errorMessage = err.response?.data?.error || err.message || '자산 목록을 가져오는데 실패했습니다.';
       setError(errorMessage);
     } finally {

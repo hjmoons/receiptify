@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from '../utils/api';
 import type { Category } from '../types/category';
 
@@ -26,16 +26,22 @@ export const useCategories = () => {
       } else if (response.data && response.data.categories && Array.isArray(response.data.categories)) {
         categoryData = response.data.categories;
       } else {
-        console.error('알 수 없는 카테고리 데이터 구조:', response.data);
+        if (import.meta.env.DEV) {
+          console.error('알 수 없는 카테고리 데이터 구조:', response.data);
+        }
         setError('잘못된 카테고리 데이터 형식입니다.');
         return;
       }
-      
-      console.log('추출된 카테고리 데이터:', categoryData);
+
+      if (import.meta.env.DEV) {
+        console.log('추출된 카테고리 데이터:', categoryData);
+      }
       setCategories(categoryData);
-      
+
     } catch (err: any) {
-      console.error('카테고리 목록 에러:', err);
+      if (import.meta.env.DEV) {
+        console.error('카테고리 목록 에러:', err);
+      }
       const errorMessage = err.response?.data?.error || err.message || '카테고리 목록을 가져오는데 실패했습니다.';
       setError(errorMessage);
     } finally {
@@ -57,7 +63,9 @@ export const useCategories = () => {
         throw new Error(response.data?.message || '카테고리 추가에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('API 호출 오류:', error);
+      if (import.meta.env.DEV) {
+        console.error('API 호출 오류:', error);
+      }
       const errorMessage = 
         error.response?.data?.message || 
         error.response?.data?.error || 
@@ -81,7 +89,9 @@ export const useCategories = () => {
         throw new Error(response.data?.message || '카테고리 수정에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('API 호출 오류:', error);
+      if (import.meta.env.DEV) {
+        console.error('API 호출 오류:', error);
+      }
       const errorMessage = 
         error.response?.data?.message || 
         error.response?.data?.error || 
@@ -102,7 +112,9 @@ export const useCategories = () => {
         throw new Error(response.data?.message || '카테고리 삭제에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('카테고리 삭제 오류:', error);
+      if (import.meta.env.DEV) {
+        console.error('카테고리 삭제 오류:', error);
+      }
       const errorMessage = 
         error.response?.data?.message || 
         error.response?.data?.error || 

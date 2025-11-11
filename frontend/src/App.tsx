@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import Settings from './pages/Settings';
 import ReceiptForm from './pages/ReceiptForm';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -11,10 +12,26 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/receipt/add" element={<ReceiptForm />} />
-        <Route path="/receipt/edit/:id" element={<ReceiptForm />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
+        <Route path="/receipt/add" element={
+          <ProtectedRoute>
+            <ReceiptForm />
+          </ProtectedRoute>
+        } />
+        <Route path="/receipt/edit/:id" element={
+          <ProtectedRoute>
+            <ReceiptForm />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );

@@ -59,7 +59,7 @@ export default function ReceiptForm() {
         category_id: receipt.category_id
       });
     } catch (error) {
-      console.error('가계부 내역 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('가계부 내역 불러오기 실패:', error);
       alert('가계부 내역을 불러오는데 실패했습니다.');
       navigate('/');
     }
@@ -75,7 +75,7 @@ export default function ReceiptForm() {
         setForm(prev => ({ ...prev, asset_id: assetData[0].id }));
       }
     } catch (error) {
-      console.error('자산 목록 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('자산 목록 불러오기 실패:', error);
       setAssets([]);
     }
   };
@@ -87,7 +87,7 @@ export default function ReceiptForm() {
                            Array.isArray(response.data) ? response.data : [];
       setCategories(categoryData);
     } catch (error) {
-      console.error('카테고리 목록 불러오기 실패:', error);
+      if (import.meta.env.DEV) console.error('카테고리 목록 불러오기 실패:', error);
       setCategories([]);
     }
   };
@@ -156,7 +156,7 @@ export default function ReceiptForm() {
         throw new Error(response.data?.message || `가계부 내역 ${isEditMode ? '수정' : '추가'}에 실패했습니다.`);
       }
     } catch (error: any) {
-      console.error('API 호출 오류:', error);
+      if (import.meta.env.DEV) console.error('API 호출 오류:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
