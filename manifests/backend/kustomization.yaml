@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: receiptify
+
+commonLabels:
+  app.kubernetes.io/name: receiptify
+  app.kubernetes.io/component: backend
+
+resources:
+- deployment.yaml
+- service.yaml
+- pvc.yaml
+- secret.yaml
+
+images:
+- name: ghcr.io/YOUR_USERNAME/receiptify/backend
+  newTag: latest

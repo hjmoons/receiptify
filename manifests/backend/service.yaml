@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: receiptify-backend
+  labels:
+    app: receiptify-backend
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: receiptify-backend
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: http
