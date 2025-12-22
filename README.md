@@ -53,3 +53,8 @@ cd backend && npm install && npm run dev
 
 # AI Service
 cd ai-service && pip install -r requirements.txt && uvicorn main:app --reload
+```
+
+---
+
+**테스트 문구: Claude Code를 통한 GitHub MCP 연동 테스트**
